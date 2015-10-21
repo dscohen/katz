@@ -11,7 +11,6 @@ def katz(q,trie,doc,k,good_turing_prob):
         return alpha(q)*katz(q[1:],trie,doc,k)
 
 
-    #TODO, i don't like syntax erros so placeholder
 
 
 
@@ -22,10 +21,19 @@ def alpha(trie,w_m1):
     #p_ample, trie(w[1:]) applies good turing smoothing to all counts greater than k
     #note, since alha calculated P_s from w_2^m
 
-    alph_counts = [w[1:] for w in lk_counts]
+    #all grams that are less than k in the corpus
     return beta(len( w ))/ (1 - sum(map(p_sample,alph_counts)))
 
-def p_sample(w,trie,count_transformer):
+def beta(trie,w_m1,k):
+    #TODO do I need unicode lookup for this?
+    #w[1][0] is real counts
+    min = len(w_m1)
+    #retrieve all grams that have w_m1 as prefix, and ignore w_m1 itself
+    grams = [w[0] for w in trie.items(backoff(w_m1)) if (w[1][0] > 0 and len(w[0] != min))]
+    return 1 - sum(map(p_sample,grams))
+
+
+def p_sample(w,trie,nk):
     """accepts w = ngram and trie, returns P_s according to katz model"""
     #first element stored true count, second element stores gt smoothed count
 
@@ -35,3 +43,4 @@ def p_sample(w,trie,count_transformer):
         dr = (trie[w][0]/trie[w][1] - eq)/(1-eq)
     #TODO implement backoff trie lookup correctly
     return dr*trie[w][0]/trie[w[:-1]][0]
+
