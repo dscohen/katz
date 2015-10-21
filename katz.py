@@ -25,8 +25,13 @@ def alpha(trie,w_m1):
     alph_counts = [w[1:] for w in lk_counts]
     return beta(len( w ))/ (1 - sum(map(p_sample,alph_counts)))
 
-def p_sample(w,trie):
+def p_sample(w,trie,count_transformer):
     """accepts w = ngram and trie, returns P_s according to katz model"""
     #first element stored true count, second element stores gt smoothed count
 
-    return (trie[w][1]/trie[w][0]) * trie[w][0]/trie[w[:-1]][0]
+    dr = 1
+    if w_count <= k:
+        eq = ((k+1)(nk[1]))/nk[0]
+        dr = (trie[w][0]/trie[w][1] - eq)/(1-eq)
+    #TODO implement backoff trie lookup correctly
+    return dr*trie[w][0]/trie[w[:-1]][0]
