@@ -195,8 +195,10 @@ def setupTexPlots():
 def good_turing(counts,k):
     """
     Given a dict mapping types:counts, return dict with species:(old,new)
+    and returns n_k+1
     """
     #SHOULD WE CHANGE NGRAM COUNTS OF 1 to smoothed values at 0?
+    #make count transformer as well
     if 0 in counts.Values():
         raise ValueError('Keys must not have 0 counts')
     totalCounts = float(sum(counts.values()))
