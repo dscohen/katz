@@ -81,6 +81,7 @@ def simpleGoodTuringProbs(counts, confidenceLevel=1.96):
     that controls how many datapoints are smoothed loglinearly (see Gale and
     Sampson 1995).
     """
+    #TODO implement proper return format for trie
     # Gale and Sampson (1995/2001 reprint)
     if 0 in counts.values():
         raise ValueError('Species must not have 0 count.')
