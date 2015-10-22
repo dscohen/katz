@@ -2,7 +2,7 @@
 import os,sys,pickle
 import marisa_trie
 from nltk import word_tokenize,bigrams
-from collections import Counter
+import parser
 
 class Index:
     def __init__(self,mypath,stem,corpus_smoothing):
@@ -31,17 +31,17 @@ class Index:
         t_dict = {}
         files = [f for f in os.listdir(mypath) if isfile(join(mypath,f))]
         for fil in files:
-            f = open(fil,'r')
-            corpus = word_tokenize(f.read())
-            if stem != None:
-                corpus = stem(corpus)
-            t_dict = {fil:_build_trie(corpus)}
-            f.close()
+            doc_text = parser.parse(fil)
+            for docno,text in doct_text:
+                corpus = word_tokenize(text)
+                if stem != None:
+                    corpus = stem(corpus)
+                t_dict = {docno:_build_trie(corpus)}
         with open('trie_dict.pkl','wb') as handle:
             pickle.dump(t_dict,handle)
 
     def _build_trie():
-        """accepts TREC style corpus, build trie for each doc"""
+        """accepts robust style corpus, build trie for each doc"""
         all_grams,k_counts  = _get_grams(corpus,3)
 
         #format of storage is (uint,uint) in  byte format
