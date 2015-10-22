@@ -5,8 +5,9 @@ from nltk import word_tokenize,bigrams
 from collections import Counter
 
 class Index:
-    def __init__(self,mypath,stem=None):
+    def __init__(self,mypath,stem,corpus_smoothing):
         #if no trie index has been created, create then load it
+        #TODO REad flags from stem and use correct one
         if 'trie_dict.pkl' not in os.listdir(mypath):
             self._build_all(mypath,stem)
         self.trie = pickle.load(open(mypath,"rb"))
