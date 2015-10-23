@@ -12,9 +12,9 @@ class Index:
         #TODO REad flags from stem and use correct one
         self.k = 5
         k = 5
-        if 'trie_dict.pkl' not in os.listdir(mypath):
+        if 'trie_dict.pkl' not in os.listdir("./"):
             self._build_all(mypath,stem,k)
-        self.trie = pickle.load(open(mypath,"rb"))
+        self.trie = pickle.load(open('trie_dict.pkl',"rb"))
 
     # def backoff(self,front=0,back=0):
 
