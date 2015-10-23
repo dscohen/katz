@@ -2,9 +2,9 @@ from scipy import linalg
 from numpy import c_, exp, log, inf, NaN, sqrt
 
 def katz(q,trie,doc,k,good_turing_prob):
-    count = trie[w][0]
+    count = trie[q][0]
     #calculate P if freq is above k
-    if q_count > 0:
+    if trie[q][0] > k:
         return p_sample(q,trie)
     else:
         #backoff to mgram 2..m
@@ -16,7 +16,7 @@ def katz(q,trie,doc,k,good_turing_prob):
 
 
     #beta is 1 - katz_prob of of all w_i 
-def alpha(trie,w_m1):
+def alpha(trie,w_m1,k):
     #return beta function + sum of all samples with w_1^m greater than k
     #p_ample, trie(w[1:]) applies good turing smoothing to all counts greater than k
     #note, since alpha calculated P_s from w_2^m
@@ -39,7 +39,7 @@ def probs(trie,w,k):
     return 1 - sum(map(p_sample,grams))
 
 
-def p_sample(w,trie,nk):
+def p_sample(w,trie,nk,k):
     """accepts w = ngram and trie, returns P_s according to katz model"""
 
     w_1 = backoff(w,back=1)
@@ -50,4 +50,12 @@ def p_sample(w,trie,nk):
         eq = ((k+1)(nk[1]))/nk[0]
         dr = (w_gt_count/w_count - eq)/(1-eq)
     return dr*w_count/trie[w_1][0]
+
+def backoff(gram,front=0,back=0):
+    """
+    properly subdivide a ngram to either back off from the front or the back (for alpha lookup)
+    """
+    gram = gram.split(" ")
+    return gram[front:(len(gram-back))]
+
 

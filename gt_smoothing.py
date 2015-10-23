@@ -91,7 +91,6 @@ def simpleGoodTuringProbs(counts, confidenceLevel=1.96):
     assert(totalCounts == sum([r*n for r,n in countsOfCounts.iteritems()]))
 
     p0 = countsOfCounts[1] / totalCounts
-    print 'p0 = %f' % p0
 
     Z = __sgtZ(sortedCounts, countsOfCounts)
 
@@ -111,47 +110,48 @@ def simpleGoodTuringProbs(counts, confidenceLevel=1.96):
         # contine doing so; also start doing so if no species was observed
         # with count r+1.
         if r+1 not in countsOfCounts:
-            if not useY:
-                print 'Warning: reached unobserved count before crossing the '\
-                      'smoothing threshold.'
             useY = True
 
         if useY:
+            #ONLY MISSING ONES ARE SMOOTHED
+            useY = False
             rSmoothed[r] = y
             continue
         
         # x is the empirical Turing estimate for r
         x = (float(r+1) * countsOfCounts[r+1]) / countsOfCounts[r]
 
-        Nr = float(countsOfCounts[r])
-        Nr1 = float(countsOfCounts[r+1])
+        # Nr = float(countsOfCounts[r])
+        # Nr1 = float(countsOfCounts[r+1])
 
-        # t is the width of the 95% (or whatever) confidence interval of the
-        # empirical Turing estimate, assuming independence.
-        t = confidenceLevel * \
-            sqrt(\
-                float(r+1)**2 * (Nr1 / Nr**2) \
-                              * (1. + (Nr1 / Nr))\
-            )
+        # # t is the width of the 95% (or whatever) confidence interval of the
+        # # empirical Turing estimate, assuming independence.
+        # t = confidenceLevel * \
+        #     sqrt(\
+        #         float(r+1)**2 * (Nr1 / Nr**2) \
+        #                       * (1. + (Nr1 / Nr))\
+        #     )
 
-        # If the difference between x and y is more than t, then the empirical
-        # Turing estimate x tends to be more accurate. Otherwise, use the
-        # loglinear smoothed value y.
-        if abs(x - y) > t:
-            rSmoothed[r] = x
-        useY = True
-        rSmoothed[r] = y
+        # # If the difference between x and y is more than t, then the empirical
+        # # Turing estimate x tends to be more accurate. Otherwise, use the
+        # # loglinear smoothed value y.
+        # if abs(x - y) > t:
+        #     rSmoothed[r] = x
+        rSmoothed[r] = x
 
     # normalize and return the resulting smoothed probabilities, less the
     # estimated probability mass of unseen species.
     sgtProbs = {}
     smoothTot = 0.0
-    for r, rSmooth in rSmoothed.iteritems():
-        smoothTot += countsOfCounts[r] * rSmooth
+    gt_counts = {}
+    # for r, rSmooth in rSmoothed.iteritems():
+    #     smoothTot += countsOfCounts[r] * rSmooth
     for species, spCount in counts.iteritems():
-        sgtProbs[species] = (1.0 - p0) * (rSmoothed[spCount] / smoothTot)
+        # sgtProbs[species] = (1.0 - p0) * (rSmoothed[spCount] / smoothTot)
+        gt_counts[species] = rSmoothed[spCount]
 
-    return sgtProbs, p0
+
+    return gt_counts
 
 def __sgtZ(sortedCounts, countsOfCounts):
     # For each count j, set Z[j] to the linear interpolation of i,j,k, where i
@@ -173,9 +173,6 @@ def __sgtZ(sortedCounts, countsOfCounts):
 def __loglinregression(rs, zs):
     coef = linalg.lstsq(c_[log(rs), (1,)*len(rs)], log(zs))[0]
     a, b = coef
-    print 'Regression: log(z) = %f*log(r) + %f' % (a,b)
-    if a > -1.0:
-        print 'Warning: slope is > -1.0'
     return a, b
 
 
@@ -200,21 +197,21 @@ def good_turing(counts,k):
     """
     #SHOULD WE CHANGE NGRAM COUNTS OF 1 to smoothed values at 0?
     #make count transformer as well
-    if 0 in counts.Values():
+    if 0 in counts.values():
         raise ValueError('Keys must not have 0 counts')
     totalCounts = float(sum(counts.values()))
     countsOfCounts = countOfCountsTable(counts)
     #sorted list of N_r
-    sortedCounts = sorted(countsOfCounts.key)
+    sortedCounts = sorted(countsOfCounts.keys())
     assert(totalCounts == sum([r*n for r,n in countsOfCounts.iteritems()]))
     p0 = countsOfCounts[1]/totalCounts
     for r in sortedCounts:
         #for katz, we only use discounted values for counts < k
         if r > k:
             break
-        countsOfCounts[r] = (r+1)*countsOfCounts[r+1]/float(countOfCounts[r])
-    countOfCounts[0] = p0
+        countsOfCounts[r] = (r+1)*countsOfCounts[r+1]/float(countsOfCounts[r])
+    countsOfCounts[0] = p0
     for species,spCount in counts.iteritems():
         #new dict is bigram: original count, discounted count
-        counts[species] = (counts[species],countOfCounts[counts[species]])
+        counts[species] = (counts[species],countsOfCounts[counts[species]])
     return counts
