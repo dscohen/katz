@@ -1,7 +1,10 @@
 from scipy import linalg
 from numpy import c_, exp, log, inf, NaN, sqrt
 
-def katz(q,trie,doc,k,good_turing_prob):
+def katz(q,trie,doc,k):
+    """
+    q is term 
+    """
     count = trie[q][0]
     #calculate P if freq is above k
     if trie[q][0] > k:
@@ -56,6 +59,6 @@ def backoff(gram,front=0,back=0):
     properly subdivide a ngram to either back off from the front or the back (for alpha lookup)
     """
     gram = gram.split(" ")
-    return gram[front:(len(gram-back))]
+    return " ".join(gram[front:(len(gram-back))])
 
 
