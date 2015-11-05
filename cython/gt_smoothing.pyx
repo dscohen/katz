@@ -86,16 +86,14 @@ def simpleGoodTuringProbs(counts, confidenceLevel=1.96):
     if 0 in counts.values():
         raise ValueError('Species must not have 0 count.')
     totalCounts = float(sum(counts.values()))   # N (G&S)
-    if totalCounts == 0:
-        print "gt: returned default counts as no information was available to smooth"
-        return counts
     countsOfCounts = countOfCountsTable(counts) # r -> n (G&S)
     sortedCounts = sorted(countsOfCounts.keys())
     assert(totalCounts == sum([r*n for r,n in countsOfCounts.iteritems()]))
 
-    if len(countsOfCounts.values()) == 0:
-        return {}
-    p0 = countsOfCounts[1] / totalCounts
+    try:
+        p0 = countsOfCounts[1] / totalCounts
+    except:
+        return counts
 
     Z = __sgtZ(sortedCounts, countsOfCounts)
 

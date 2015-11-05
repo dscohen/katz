@@ -16,8 +16,8 @@ class Index:
     def __init__(self,mypath,stem,corpus_smoothing):
         #if no trie index has been created, create then load it
         #TODO REad flags from stem and use correct one
-        self.k = 5
-        k = 5
+        self.k = 0
+        k = 0
         if 'trie_dict.pkl' not in os.listdir("./"):
             self._build_all(mypath,stem,k)
         self.trie = pickle.load(open('trie_dict.pkl',"rb"))
@@ -35,6 +35,7 @@ class Index:
         f.close()
         """mypath is path to where files are stored"""
         t_dict = {}
+        remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
         files = [f for f in os.listdir(mypath) if os.path.isfile(mypath+f)]
         print files
         for fil in files:
@@ -46,7 +47,8 @@ class Index:
             for docno,text in doc_text:
                 print docno
                 #stop words using stemmed method"
-                corpus = [i for i in nltk.word_tokenize(text) if i not in stop]
+                corpus = text.translate(remove_punctuation_map)
+                corpus = [i for i in corpus.split(' ') if i not in stop+[" "]]
                 t_dict[docno] = self._build_trie(corpus,k)
             with open('trie_'+fil+'.pkl','wb') as handle:
                 pickle.dump(t_dict,handle)
@@ -100,9 +102,6 @@ class Index:
         """
         nk = []
         counts = gt.countOfCountsTable(bg)
-        if len(counts.values()) == 0:
-            print "No counts for nk"
-            return [0,0]
         nk.append(counts[1])
         nk.append(counts.get(k+1,0))
         return nk
